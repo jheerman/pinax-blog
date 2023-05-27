@@ -1,0 +1,26 @@
+name: Publish
+on:
+  push:
+    branches: ['master']
+defaults:
+  run:
+    shell: bash
+jobs:
+  tag-trunk:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Create Tag
+      id: create-tag
+      run: |
+        MAJOR_NUMBER=1
+        MINOR_NUMBER=0
+        REVISION_NUMBER=$(git rev-list HEAD --count)
+        VERSION="${MAJOR_NUMBER}.${MINOR_NUMBER}.${REVISION_NUMBER}"
+        TAG="v${VERSION}"
+        git -c user.name="github-actions[bot]" -c user.email="github-actions-bot@agcocorp.com" tag $TAG
+        git push origin $TAG

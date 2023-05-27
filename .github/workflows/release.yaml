@@ -1,0 +1,55 @@
+name: Release
+on:
+  push:
+    branches: ['release/**']
+defaults:
+  run:
+    shell: bash
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Create Release Notes
+      id: notes
+      run: |
+        current_tag=$(git tag --points-at ${{ GITHUB.SHA }} | head -1)
+        last_tag=$(git tag -l "*release" --sort=-v:refname | head -1)
+        # look for last release tag
+        if [ -n "$last_tag" ]; then
+          last_ref=$(git show-ref -s $last_tag)
+          logs=$(git log $last_ref..$GITHUB_SHA --pretty='- %h %s' --date=short)
+        else
+          # if the last tag is not found, check again but don't limit results to 1 item
+          last_tag=$(git tag -l "*release" --sort=-v:refname)
+          if [ -n "$last_tag" ]; then
+            last_ref=$(git show-ref -s $last_tag)
+            logs=$(git log $last_ref..$GITHUB_SHA --pretty='- %h %s' --date=short)
+          else
+            # if we still can't find a tag, then get all the commit history
+            logs=$(git log --pretty='- %h %s' --date=short)
+          fi
+        fi
+        new_tag="${current_tag}-release"
+        echo "$logs" > release_notes.md
+        echo "NEW_TAG=$new_tag" >> $GITHUB_OUTPUT
+        echo "RELEASE_NAME=${new_tag:1}" >> $GITHUB_OUTPUT
+        git -c user.name="github-actions[bot]" -c user.email="github-actions-bot@agcocorp.com" tag $new_tag
+        git push origin $new_tag
+    - name: Create Release
+      uses: actions/create-release@latest
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        NEW_TAG: ${{ steps.notes.outputs.NEW_TAG }}
+        RELEASE_NAME: ${{ steps.notes.outputs.RELEASE_NAME }}
+      with:
+        tag_name: ${{ env.NEW_TAG }}
+        release_name: ${{ env.RELEASE_NAME }}
+        body_path: release_notes.md
+        draft: false
+        prerelease: false
