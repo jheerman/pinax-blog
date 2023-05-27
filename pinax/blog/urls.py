@@ -37,13 +37,13 @@ urlpatterns = [
 
 if settings.PINAX_BLOG_SLUG_UNIQUE:
     urlpatterns += [
-        url(r"^(?P<post_slug>[-\w]+)/$",
+        re_path(r"^(?P<post_slug>[-\w]+)/$",
             SlugUniquePostDetailView.as_view(),
             name="blog_post_slug")
     ]
 else:
     urlpatterns += [
-        url(r"^(?P<year>\d{4})/(?P<month>\d{2})/(?P<day>\d{2})/(?P<slug>[-\w]+)/$",
+        re_path(r"^(?P<year>\d{4})/(?P<month>\d{2})/(?P<day>\d{2})/(?P<slug>[-\w]+)/$",
             DateBasedPostDetailView.as_view(),
             name="blog_post"),
     ]
