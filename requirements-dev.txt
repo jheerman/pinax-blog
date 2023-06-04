@@ -1,0 +1,7 @@
+tox
+pytest
+coverage
+isort
+Django
+pinax-images
+pre-commit
