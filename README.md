@@ -88,10 +88,9 @@ See `setup.py` for specific required versions of these packages.
 
 #### Supported Django and Python Versions
 
-Django / Python | 3.6 | 3.7 | 3.8
+Django / Python | 3.8 | 3.9 | 3.10
 --------------- | --- | --- | ---
-2.2  |  *  |  *  |  *
-3.0  |  *  |  *  |  *
+4.0  |  *  |  *  |  *
 
 
 ## Documentation
@@ -398,6 +397,11 @@ Both templates ship already configured to work out of the box.
 
 
 ## Change Log
+
+### 9.0.0
+
+* Drop Django 2.2, and 3.0, and Python 3.6 and 3.7 support
+* Add Django 4.0, and Python 3.8, 3.9, and 3.10 support
 
 ### 8.0.1
 
