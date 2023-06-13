@@ -1,0 +1,11 @@
+tox
+pytest
+coverage
+isort
+Django
+pinax-images
+pre-commit
+django-bootstrap-form
+pinax-templates==3.0.0
+markdown==2.6.11
+django-test-plus
