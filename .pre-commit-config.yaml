@@ -21,6 +21,7 @@ repos:
     -   id: name-tests-test
         description: "Verifies that test files are named correctly"
         args: ['--pytest-test-first']
+        exclude: ^pinax/blog/tests/urls.py
     -   id: pretty-format-json
         description: "Checks that all your JSON files are are sorted and indented"
         args: ['--autofix', '--indent=2']

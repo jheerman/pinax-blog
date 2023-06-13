@@ -1,21 +1,17 @@
-from __future__ import absolute_import
-
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
 from ..forms import PostForm
 from ..models import Blog, Post, Section
-from .tests import randomword
+from .test_blog import randomword
 
 
 class TestForms(TestCase):
-
     def setUp(self):
         super().setUp()
 
         self.user = get_user_model().objects.create_user(
-            username="patrick",
-            password="password"
+            username="patrick", password="password"  # nosec
         )
         self.user.save()
         self.blog = Blog.objects.first()
@@ -34,7 +30,7 @@ class TestForms(TestCase):
             "title": title,
             "content": self.content,
             "teaser": self.teaser,
-            "state": 1
+            "state": 1,
         }
         form = PostForm(data=form_data)
         # slug field is not validated in form

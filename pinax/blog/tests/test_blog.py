@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 import random
 
 from django.core.exceptions import ValidationError
@@ -16,11 +14,10 @@ ascii_lowercase = "abcdefghijklmnopqrstuvwxyz"
 
 
 def randomword(length):
-    return "".join(random.choice(ascii_lowercase) for i in range(length))
+    return "".join(random.choice(ascii_lowercase) for i in range(length))  # nosec
 
 
 class TestBlog(TestCase):
-
     def setUp(self):
         """
         Create default Sections and Posts.
@@ -35,27 +32,30 @@ class TestBlog(TestCase):
         # Create two published Posts, one in each section.
         self.orange_title = "Orange You Wonderful"
         self.orange_slug = slugify(self.orange_title)
-        self.orange_post = Post.objects.create(blog=self.blog,
-                                               section=self.oranges,
-                                               title=self.orange_title,
-                                               slug=self.orange_slug,
-                                               author=self.user,
-                                               markup=self.markup,
-                                               state=Post.STATE_CHOICES[-1][0])
+        self.orange_post = Post.objects.create(
+            blog=self.blog,
+            section=self.oranges,
+            title=self.orange_title,
+            slug=self.orange_slug,
+            author=self.user,
+            markup=self.markup,
+            state=Post.STATE_CHOICES[-1][0],
+        )
 
         self.apple_title = "Apple of My Eye"
         self.apple_slug = slugify(self.apple_title)
-        self.apple_post = Post.objects.create(blog=self.blog,
-                                              section=self.apples,
-                                              title=self.apple_title,
-                                              slug=self.apple_slug,
-                                              author=self.user,
-                                              markup=self.markup,
-                                              state=Post.STATE_CHOICES[-1][0])
+        self.apple_post = Post.objects.create(
+            blog=self.blog,
+            section=self.apples,
+            title=self.apple_title,
+            slug=self.apple_slug,
+            author=self.user,
+            markup=self.markup,
+            state=Post.STATE_CHOICES[-1][0],
+        )
 
 
 class TestViewGetSection(TestBlog):
-
     def test_invalid_section_slug(self):
         """
         Ensure invalid section slugs do not cause site crash.
@@ -79,7 +79,6 @@ class TestViewGetSection(TestBlog):
 
 
 class TestViewGetPosts(TestBlog):
-
     def test_section_posts(self):
         """
         Verify only the expected Post is in context for section "orange".
@@ -101,32 +100,33 @@ class TestViewGetPosts(TestBlog):
 
 
 class TestModelFieldValidation(TestBlog):
-
     def test_overlong_slug(self):
         title_len = Post._meta.get_field("title").max_length
         title = randomword(title_len)
         slug_len = Post._meta.get_field("slug").max_length
         slug = randomword(slug_len + 1)
-        slug_post = Post(blog=self.blog,
-                         section=self.apples,
-                         title=title,
-                         slug=slug,
-                         author=self.user,
-                         state=Post.STATE_CHOICES[-1][0])
+        slug_post = Post(
+            blog=self.blog,
+            section=self.apples,
+            title=title,
+            slug=slug,
+            author=self.user,
+            state=Post.STATE_CHOICES[-1][0],
+        )
 
         with self.assertRaises(ValidationError) as context_manager:
             slug_post.save()
 
         the_exception = context_manager.exception
         self.assertIn(
-            "Ensure this value has at most {} characters (it has {})."
-            .format(slug_len, len(slug)),
-            the_exception.messages
+            "Ensure this value has at most {} characters (it has {}).".format(
+                slug_len, len(slug)
+            ),
+            the_exception.messages,
         )
 
 
 class TestContextProcessors(TestBlog):
-
     def test_no_resolver_match(self):
         """
         Ensure no problem when `request.resolver_match` is None
@@ -138,7 +138,6 @@ class TestContextProcessors(TestBlog):
 
 
 class TestViews(TestBlog):
-
     def test_manage_post_create_get(self):
         """
         Ensure template with external URL references renders properly
@@ -175,5 +174,7 @@ class TestViews(TestBlog):
         )
         with self.login(self.user):
             self.post("pinax_blog:manage_post_create", data=post_data)
-            self.assertRedirects(self.last_response, reverse("pinax_blog:manage_post_list"))
+            self.assertRedirects(
+                self.last_response, reverse("pinax_blog:manage_post_list")
+            )
             self.assertTrue(Post.objects.get(title=post_title))
