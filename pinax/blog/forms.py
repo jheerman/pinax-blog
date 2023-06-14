@@ -34,11 +34,12 @@ class PostFormMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         post = self.instance
-        latest_revision = post.latest()
-        if latest_revision:
-            # set initial data from the latest revision
-            self.fields["teaser"].initial = latest_revision.teaser
-            self.fields["content"].initial = latest_revision.content
+        if post.id:
+            latest_revision = post.latest()
+            if latest_revision:
+                # set initial data from the latest revision
+                self.fields["teaser"].initial = latest_revision.teaser
+                self.fields["content"].initial = latest_revision.content
 
     def save_post(self, post):
         published = False
