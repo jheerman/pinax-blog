@@ -10,6 +10,7 @@
     {% endif %}
     <form method="post">
         {% csrf_token %}
+        {{ form.section|bootstrap}}
         {{ form.title|bootstrap }}
         <div class="form-group">
             <label class="control-label  " for="id_teaser">Teaser</label>
