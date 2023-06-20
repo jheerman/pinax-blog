@@ -135,11 +135,7 @@ class PostForm(PostFormMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if Section.objects.count() < 2:
-            self.section = Section.objects.first()
-            del self.fields["section"]
-        else:
-            self.section = None
+        self.section = None
 
     def save(self, blog=None, author=None):
         post = super().save(commit=False)
