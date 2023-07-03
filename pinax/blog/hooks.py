@@ -26,6 +26,12 @@ class PinaxBlogDefaultHookSet:
     def can_manage(self, request, *args, **kwargs):
         return request.user.is_staff
 
+    def user_can_manage(self, request, post_id, *args, **kwargs):
+        return request.user.is_authenticated and post_id == request.user.id
+
+    def staff_can_manage(self, request, *args, **kwargs):
+        return request.user.is_staff
+
     def response_cannot_manage(self, request, *args, **kwargs):
         """
         The response to return when `can_manage` returns `False` for all of the
