@@ -7,6 +7,7 @@ from .views import (
     ManageCreatePost,
     ManageDeletePost,
     ManagePostList,
+    UserManagePostList,
     ManageUpdatePost,
     SecretKeyPostDetailView,
     SectionIndexView,
@@ -39,7 +40,7 @@ urlpatterns = [
         name="blog_feed",
     ),
     # authoring
-    re_path(r"^manage/posts/$", ManagePostList.as_view(), name="manage_post_list"),
+    re_path(r"^manage/posts/$", UserManagePostList.as_view(), name="manage_post_list"),
     re_path(
         r"^manage/posts/create/$", ManageCreatePost.as_view(), name="manage_post_create"
     ),
