@@ -238,6 +238,16 @@ class ManageSuccessUrlMixin:
         return reverse("pinax_blog:manage_post_list")
 
 
+class UserManageBlogMixin:
+
+    def dispatch(self, request, *args, **kwargs):
+        self.request = request
+        self.args = args
+        self.kwargs = kwargs
+        self.blog = hookset.get_blog(**kwargs)
+        return super().dispatch(request, *args, **kwargs)
+
+
 class ManagePostList(ManageBlogMixin, ListView):
 
     model = Post
