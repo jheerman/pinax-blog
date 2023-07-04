@@ -6,6 +6,7 @@ from .views import (
     DateBasedPostDetailView,
     ManageCreatePost,
     ManageDeletePost,
+    UserManageDeletePost,
     ManagePostList,
     UserManagePostList,
     ManageUpdatePost,
@@ -52,7 +53,7 @@ urlpatterns = [
     ),
     re_path(
         r"^manage/posts/(?P<post_pk>\d+)/delete/$",
-        ManageDeletePost.as_view(),
+        UserManageDeletePost.as_view(),
         name="manage_post_delete",
     ),
     re_path(r"^ajax/markdown/preview/$", ajax_preview, name="ajax_preview"),

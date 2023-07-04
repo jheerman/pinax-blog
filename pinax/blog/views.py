@@ -306,7 +306,7 @@ class UserManageUpdatePost(ManageUpdatePost):
         return hookset.response_cannot_manage(request, *args, **kwargs)
 
 
-class ManageDeletePost(ManageBlogMixin, ManageSuccessUrlMixin, DeleteView):
+class ManageDeletePost(UserManageBlogMixin, ManageSuccessUrlMixin, DeleteView):
 
     model = Post
     pk_url_kwarg = "post_pk"
@@ -314,6 +314,19 @@ class ManageDeletePost(ManageBlogMixin, ManageSuccessUrlMixin, DeleteView):
 
     def get_queryset(self):
         return super().get_queryset().filter(blog=self.blog)
+
+
+class UserManageDeletePost(ManageDeletePost):
+    def dispatch(self, request, *args, **kwargs):
+        post_id = int(kwargs.get("post_pk"))
+        author_id = Post.objects.filter(id=post_id).values("author").get().get("author")
+        if hookset.staff_can_manage(request):
+            return super().dispatch(request, *args, **kwargs)
+        elif hookset.user_can_manage(request, author_id=author_id):
+            return super().dispatch(request, *args, **kwargs)
+        return hookset.response_cannot_manage(request, *args, **kwargs)
+
+
 
 
 @require_POST
