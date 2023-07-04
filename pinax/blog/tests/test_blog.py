@@ -211,9 +211,6 @@ class TestViews(TestBlog):
             self.assertIn(self.orange2_post, response.context_data["post_list"])
 
     def test_manage_update_post_get_author(self):
-        url = reverse("pinax_blog:manage_post_update", kwargs={"post_pk": "1"})
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
 
         with self.login(self.user):
             url = reverse("pinax_blog:manage_post_update", kwargs={"post_pk": "1"})
@@ -222,6 +219,10 @@ class TestViews(TestBlog):
             self.assertTemplateUsed("pinax/blog/manage_post_update")
 
     def test_manage_update_post_get_not_author(self):
+        url = reverse("pinax_blog:manage_post_update", kwargs={"post_pk": "1"})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
         self.user = self.make_user("jani")
         self.user.save()
 
