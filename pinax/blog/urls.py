@@ -9,6 +9,7 @@ from .views import (
     ManagePostList,
     UserManagePostList,
     ManageUpdatePost,
+    UserManageUpdatePost,
     SecretKeyPostDetailView,
     SectionIndexView,
     SlugUniquePostDetailView,
@@ -46,7 +47,7 @@ urlpatterns = [
     ),
     re_path(
         r"^manage/posts/(?P<post_pk>\d+)/update/$",
-        ManageUpdatePost.as_view(),
+        UserManageUpdatePost.as_view(),
         name="manage_post_update",
     ),
     re_path(
