@@ -27,8 +27,8 @@ class PinaxBlogDefaultHookSet:
         return request.user.is_staff
 
     def user_can_manage(self, request, *args, **kwargs):
-        post_user_id = kwargs.get("post_user_id")
-        return post_user_id == request.user.id
+        author_id = kwargs.get("author_id")
+        return author_id == request.user.id
 
     def staff_can_manage(self, request, *args, **kwargs):
         return request.user.is_staff
