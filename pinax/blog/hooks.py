@@ -28,10 +28,13 @@ class PinaxBlogDefaultHookSet:
 
     def user_can_manage(self, request, *args, **kwargs):
         post_user_id = kwargs.get("post_user_id")
-        return request.user.is_authenticated and post_user_id == request.user.id
+        return post_user_id == request.user.id
 
     def staff_can_manage(self, request, *args, **kwargs):
         return request.user.is_staff
+
+    def user_authenticated(self, request, *args, **kwargs):
+        return request.user.is_authenticated
 
     def response_cannot_manage(self, request, *args, **kwargs):
         """
