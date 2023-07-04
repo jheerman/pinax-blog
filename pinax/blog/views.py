@@ -244,8 +244,10 @@ class UserManageBlogMixin:
         self.request = request
         self.args = args
         self.kwargs = kwargs
-        self.blog = hookset.get_blog(**kwargs)
-        return super().dispatch(request, *args, **kwargs)
+        if hookset.user_authenticated(request, *args):
+            self.blog = hookset.get_blog(**kwargs)
+            return super().dispatch(request, *args, **kwargs)
+        return hookset.response_cannot_manage(request, *args, **kwargs)
 
 
 class ManagePostList(ManageBlogMixin, ListView):
@@ -270,7 +272,7 @@ class UserManagePostList(UserManageBlogMixin, ListView):
         return qs
 
 
-class ManageCreatePost(ManageBlogMixin, ManageSuccessUrlMixin, CreateView):
+class ManageCreatePost(UserManageBlogMixin, ManageSuccessUrlMixin, CreateView):
 
     model = Post
     form_class = PostForm
@@ -281,7 +283,7 @@ class ManageCreatePost(ManageBlogMixin, ManageSuccessUrlMixin, CreateView):
         return redirect(self.get_success_url())
 
 
-class ManageUpdatePost(ManageBlogMixin, ManageSuccessUrlMixin, UpdateView):
+class ManageUpdatePost(UserManageBlogMixin, ManageSuccessUrlMixin, UpdateView):
 
     model = Post
     form_class = PostForm
@@ -292,7 +294,19 @@ class ManageUpdatePost(ManageBlogMixin, ManageSuccessUrlMixin, UpdateView):
         return super().get_queryset().filter(blog=self.blog)
 
 
-class ManageDeletePost(ManageBlogMixin, ManageSuccessUrlMixin, DeleteView):
+class UserManageUpdatePost(ManageUpdatePost):
+
+    def dispatch(self, request, *args, **kwargs):
+        post_id = int(kwargs.get("post_pk"))
+        author_id = Post.objects.filter(id=post_id).values("author").get().get("author")
+        if hookset.staff_can_manage(request):
+            return super().dispatch(request, *args, **kwargs)
+        elif hookset.user_can_manage(request, author_id=author_id):
+            return super().dispatch(request, *args, **kwargs)
+        return hookset.response_cannot_manage(request, *args, **kwargs)
+
+
+class ManageDeletePost(UserManageBlogMixin, ManageSuccessUrlMixin, DeleteView):
 
     model = Post
     pk_url_kwarg = "post_pk"
@@ -300,6 +314,19 @@ class ManageDeletePost(ManageBlogMixin, ManageSuccessUrlMixin, DeleteView):
 
     def get_queryset(self):
         return super().get_queryset().filter(blog=self.blog)
+
+
+class UserManageDeletePost(ManageDeletePost):
+    def dispatch(self, request, *args, **kwargs):
+        post_id = int(kwargs.get("post_pk"))
+        author_id = Post.objects.filter(id=post_id).values("author").get().get("author")
+        if hookset.staff_can_manage(request):
+            return super().dispatch(request, *args, **kwargs)
+        elif hookset.user_can_manage(request, author_id=author_id):
+            return super().dispatch(request, *args, **kwargs)
+        return hookset.response_cannot_manage(request, *args, **kwargs)
+
+
 
 
 @require_POST

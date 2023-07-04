@@ -143,12 +143,9 @@ class TestViews(TestBlog):
         Ensure template with external URL references renders properly
         for user with proper credentials.
         """
-        with self.login(self.user):
-            response = self.client.get("pinax_blog:manage_post_create")
-            self.assertEqual(response.status_code, 404)
+        response = self.client.get("pinax_blog:manage_post_create")
+        self.assertEqual(response.status_code, 404)
 
-        self.user.is_staff = True
-        self.user.save()
         with self.login(self.user):
             self.get("pinax_blog:manage_post_create")
             self.response_200()
@@ -161,8 +158,6 @@ class TestViews(TestBlog):
         Ensure template with external URL references renders properly
         for user with proper credentials.
         """
-        self.user.is_staff = True
-        self.user.save()
         post_title = "You'll never believe what happened next!"
         post_data = dict(
             section=self.apples.pk,
@@ -182,7 +177,7 @@ class TestViews(TestBlog):
     def test_user_manage_post_list(self):
         url = reverse("pinax_blog:manage_post_list")
         response = self.client.get(url)
-        self.assertEqual(response.context_data["post_list"].count(), 0)
+        self.assertEqual(response.status_code, 404)
 
         with self.login(self.user):
             url = reverse("pinax_blog:manage_post_list")
@@ -210,4 +205,32 @@ class TestViews(TestBlog):
             self.assertEqual(response.context_data["post_list"].count(), 1)
             self.assertIn(self.orange2_post, response.context_data["post_list"])
 
+    def test_manage_update_post_get_author(self):
 
+        with self.login(self.user):
+            url = reverse("pinax_blog:manage_post_update", kwargs={"post_pk": "1"})
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+            self.assertTemplateUsed("pinax/blog/manage_post_update")
+
+    def test_manage_update_post_get_not_author(self):
+        url = reverse("pinax_blog:manage_post_update", kwargs={"post_pk": "1"})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+        self.user = self.make_user("jani")
+        self.user.save()
+
+        with self.login(self.user):
+            url = reverse("pinax_blog:manage_post_update", kwargs={"post_pk": "1"})
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 404)
+
+        self.user.is_staff = True
+        self.user.save()
+
+        with self.login(self.user):
+            url = reverse("pinax_blog:manage_post_update", kwargs={"post_pk": "1"})
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+            self.assertTemplateUsed("pinax/blog/manage_post_update")
