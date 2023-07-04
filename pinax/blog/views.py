@@ -244,8 +244,10 @@ class UserManageBlogMixin:
         self.request = request
         self.args = args
         self.kwargs = kwargs
-        self.blog = hookset.get_blog(**kwargs)
-        return super().dispatch(request, *args, **kwargs)
+        if hookset.user_authenticated(request, *args):
+            self.blog = hookset.get_blog(**kwargs)
+            return super().dispatch(request, *args, **kwargs)
+        return hookset.response_cannot_manage(request, *args, **kwargs)
 
 
 class ManagePostList(ManageBlogMixin, ListView):
