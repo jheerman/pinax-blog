@@ -182,7 +182,7 @@ class TestViews(TestBlog):
     def test_user_manage_post_list(self):
         url = reverse("pinax_blog:manage_post_list")
         response = self.client.get(url)
-        self.assertEqual(response.context_data["post_list"].count(), 0)
+        self.assertEqual(response.status_code, 404)
 
         with self.login(self.user):
             url = reverse("pinax_blog:manage_post_list")
