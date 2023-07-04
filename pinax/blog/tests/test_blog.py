@@ -143,12 +143,9 @@ class TestViews(TestBlog):
         Ensure template with external URL references renders properly
         for user with proper credentials.
         """
-        # with self.login(self.user):
         response = self.client.get("pinax_blog:manage_post_create")
         self.assertEqual(response.status_code, 404)
 
-        # self.user.is_staff = True
-        # self.user.save()
         with self.login(self.user):
             self.get("pinax_blog:manage_post_create")
             self.response_200()
@@ -161,8 +158,6 @@ class TestViews(TestBlog):
         Ensure template with external URL references renders properly
         for user with proper credentials.
         """
-        # self.user.is_staff = True
-        # self.user.save()
         post_title = "You'll never believe what happened next!"
         post_data = dict(
             section=self.apples.pk,
@@ -239,25 +234,3 @@ class TestViews(TestBlog):
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
             self.assertTemplateUsed("pinax/blog/manage_post_update")
-
-    # def test_manage_update_post_post_author(self):
-    #     post_title = "Orange You Great"
-    #     post_data = Post.objects.create(
-    #         blog=self.blog,
-    #         section=self.oranges,
-    #         title=post_title,
-    #         slug=self.orange_slug,
-    #         author=self.user,
-    #         markup=self.markup,
-    #         state=Post.STATE_CHOICES[-1][0],
-    #     )
-    #     with self.login(self.user):
-    #         print(self.user)
-    #         self.post("pinax_blog:manage_post_update", data=post_data, kwargs={"post_pk": "1"})
-    #         self.assertRedirects(
-    #             self.last_response, reverse("pinax_blog:manage_post_list")
-    #         )
-    #         self.assertTrue(Post.objects.get(title=post_title))
-
-
-
