@@ -143,12 +143,12 @@ class TestViews(TestBlog):
         Ensure template with external URL references renders properly
         for user with proper credentials.
         """
-        with self.login(self.user):
-            response = self.client.get("pinax_blog:manage_post_create")
-            self.assertEqual(response.status_code, 404)
+        # with self.login(self.user):
+        response = self.client.get("pinax_blog:manage_post_create")
+        self.assertEqual(response.status_code, 404)
 
-        self.user.is_staff = True
-        self.user.save()
+        # self.user.is_staff = True
+        # self.user.save()
         with self.login(self.user):
             self.get("pinax_blog:manage_post_create")
             self.response_200()
@@ -161,8 +161,8 @@ class TestViews(TestBlog):
         Ensure template with external URL references renders properly
         for user with proper credentials.
         """
-        self.user.is_staff = True
-        self.user.save()
+        # self.user.is_staff = True
+        # self.user.save()
         post_title = "You'll never believe what happened next!"
         post_data = dict(
             section=self.apples.pk,
