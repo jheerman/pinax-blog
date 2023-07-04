@@ -238,6 +238,16 @@ class ManageSuccessUrlMixin:
         return reverse("pinax_blog:manage_post_list")
 
 
+class UserManageBlogMixin:
+
+    def dispatch(self, request, *args, **kwargs):
+        self.request = request
+        self.args = args
+        self.kwargs = kwargs
+        self.blog = hookset.get_blog(**kwargs)
+        return super().dispatch(request, *args, **kwargs)
+
+
 class ManagePostList(ManageBlogMixin, ListView):
 
     model = Post
@@ -245,6 +255,19 @@ class ManagePostList(ManageBlogMixin, ListView):
 
     def get_queryset(self):
         return super().get_queryset().filter(blog=self.blog)
+
+
+class UserManagePostList(UserManageBlogMixin, ListView):
+    model = Post
+    template_name = "pinax/blog/manage_post_list.html"
+
+    def get_queryset(self):
+        if hookset.staff_can_manage(self.request):
+            qs = Post.objects.all()
+            return qs
+        user_id = self.request.user.id
+        qs = Post.objects.filter(author=user_id)
+        return qs
 
 
 class ManageCreatePost(ManageBlogMixin, ManageSuccessUrlMixin, CreateView):
