@@ -272,7 +272,7 @@ class UserManagePostList(UserManageBlogMixin, ListView):
         return qs
 
 
-class ManageCreatePost(ManageBlogMixin, ManageSuccessUrlMixin, CreateView):
+class ManageCreatePost(UserManageBlogMixin, ManageSuccessUrlMixin, CreateView):
 
     model = Post
     form_class = PostForm
