@@ -234,3 +234,51 @@ class TestViews(TestBlog):
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
             self.assertTemplateUsed("pinax/blog/manage_post_update")
+
+    def test_manage_delete_post_not_authenticated(self):
+        url = reverse("pinax_blog:manage_post_delete", kwargs={"post_pk": "1"})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_manage_delete_post_author(self):
+
+        with self.login(self.user):
+            url = reverse("pinax_blog:manage_post_delete", kwargs={"post_pk": "1"})
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+            self.post(url)
+            self.assertRedirects(
+                self.last_response, reverse("pinax_blog:manage_post_list")
+            )
+            url = reverse("pinax_blog:manage_post_list")
+            response = self.client.get(url)
+            self.assertEqual(response.context_data["post_list"].count(), 1)
+            self.assertIn(self.apple_post, response.context_data["post_list"])
+
+    def test_manage_delete_post_not_author(self):
+
+        self.user = self.make_user("jani")
+        self.user.save()
+
+        with self.login(self.user):
+            url = reverse("pinax_blog:manage_post_delete", kwargs={"post_pk": "1"})
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 404)
+        self.user.is_staff = True
+        self.user.save()
+
+        with self.login(self.user):
+            url = reverse("pinax_blog:manage_post_delete", kwargs={"post_pk": "1"})
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+            self.post(url)
+            self.assertRedirects(
+                self.last_response, reverse("pinax_blog:manage_post_list")
+            )
+            url = reverse("pinax_blog:manage_post_list")
+            response = self.client.get(url)
+            self.assertEqual(response.context_data["post_list"].count(), 1)
+            self.assertIn(self.apple_post, response.context_data["post_list"])
+
+
+
