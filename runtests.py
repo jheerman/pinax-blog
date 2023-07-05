@@ -34,6 +34,7 @@ DEFAULT_SETTINGS = dict(
     SITE_ID=1,
     ROOT_URLCONF="pinax.blog.tests.urls",
     SECRET_KEY="notasecret",
+    DEFAULT_AUTO_FIELD="django.db.models.BigAutoField",
     TEMPLATES=[
         {
             "BACKEND": "django.template.backends.django.DjangoTemplates",

@@ -137,7 +137,31 @@ class TestContextProcessors(TestBlog):
         self.assertEqual(result, {"scoper_lookup": ""})
 
 
-class TestViews(TestBlog):
+class SuccessfulDeletion:
+    def successful_deletion_for_test_blog(self):
+        url = reverse("pinax_blog:manage_post_delete", kwargs={"post_pk": "1"})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.post(url)
+        self.assertRedirects(
+            self.last_response, reverse("pinax_blog:manage_post_list")
+        )
+        url = reverse("pinax_blog:manage_post_list")
+        response = self.client.get(url)
+        self.assertEqual(response.context_data["post_list"].count(), 1)
+        self.assertIn(self.apple_post, response.context_data["post_list"])
+
+
+class SuccessfulPostListing:
+    def successful_post_listing_for_test_blog(self):
+        url = reverse("pinax_blog:manage_post_list")
+        response = self.client.get(url)
+        self.assertEqual(response.context_data["post_list"].count(), 2)
+        self.assertIn(self.orange_post, response.context_data["post_list"])
+        self.assertIn(self.apple_post, response.context_data["post_list"])
+
+
+class TestViews(TestBlog, SuccessfulDeletion, SuccessfulPostListing):
     def test_manage_post_create_get(self):
         """
         Ensure template with external URL references renders properly
@@ -174,38 +198,37 @@ class TestViews(TestBlog):
             )
             self.assertTrue(Post.objects.get(title=post_title))
 
-    def test_user_manage_post_list(self):
+    def test_user_manage_post_list_not_authenticated(self):
         url = reverse("pinax_blog:manage_post_list")
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
 
+    def test_user_manage_post_list_own_posts(self):
+
         with self.login(self.user):
-            url = reverse("pinax_blog:manage_post_list")
-            response = self.client.get(url)
-            self.assertEqual(response.context_data["post_list"].count(), 2)
-            self.assertIn(self.orange_post, response.context_data["post_list"])
-            self.assertIn(self.apple_post, response.context_data["post_list"])
+            self.successful_post_listing_for_test_blog()
+
+    def test_user_manage_post_list_not_own_posts(self):
 
         self.user = self.make_user("jani")
         self.user.save()
-        self.orange2_title = "Orange You Wonderful2"
-        self.orange2_slug = slugify(self.orange_title)
-        self.orange2_post = Post.objects.create(
-            blog=self.blog,
-            section=self.oranges,
-            title=self.orange2_title,
-            slug=self.orange2_slug,
-            author=self.user,
-            markup=self.markup,
-            state=Post.STATE_CHOICES[-1][0],
-        )
+
         with self.login(self.user):
             url = reverse("pinax_blog:manage_post_list")
             response = self.client.get(url)
-            self.assertEqual(response.context_data["post_list"].count(), 1)
-            self.assertIn(self.orange2_post, response.context_data["post_list"])
+            self.assertEqual(response.context_data["post_list"].count(), 0)
 
-    def test_manage_update_post_get_author(self):
+        self.user.is_staff = True
+        self.user.save()
+        with self.login(self.user):
+            self.successful_post_listing_for_test_blog()
+
+    def test_manage_update_post_not_authenticated(self):
+        url = reverse("pinax_blog:manage_post_update", kwargs={"post_pk": "1"})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_manage_update_post_author(self):
 
         with self.login(self.user):
             url = reverse("pinax_blog:manage_post_update", kwargs={"post_pk": "1"})
@@ -213,10 +236,22 @@ class TestViews(TestBlog):
             self.assertEqual(response.status_code, 200)
             self.assertTemplateUsed("pinax/blog/manage_post_update")
 
-    def test_manage_update_post_get_not_author(self):
-        url = reverse("pinax_blog:manage_post_update", kwargs={"post_pk": "1"})
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
+            post_title = "Oranges are not red"
+            post_data = dict(
+                section=self.oranges.pk,
+                title=post_title,
+                teaser="teaser",
+                content="content",
+                description="description",
+                state=Post.STATE_CHOICES[-1][0],
+            )
+            self.post(url, data=post_data)
+            self.assertRedirects(
+                self.last_response, reverse("pinax_blog:manage_post_list")
+            )
+            self.assertTrue(Post.objects.get(title=post_title))
+
+    def test_manage_update_post_not_author(self):
 
         self.user = self.make_user("jani")
         self.user.save()
@@ -234,3 +269,31 @@ class TestViews(TestBlog):
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
             self.assertTemplateUsed("pinax/blog/manage_post_update")
+
+    def test_manage_delete_post_not_authenticated(self):
+        url = reverse("pinax_blog:manage_post_delete", kwargs={"post_pk": "1"})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_manage_delete_post_author(self):
+
+        with self.login(self.user):
+            self.successful_deletion_for_test_blog()
+
+    def test_manage_delete_post_not_author(self):
+
+        self.user = self.make_user("jani")
+        self.user.save()
+
+        with self.login(self.user):
+            url = reverse("pinax_blog:manage_post_delete", kwargs={"post_pk": "1"})
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 404)
+        self.user.is_staff = True
+        self.user.save()
+
+        with self.login(self.user):
+            self.successful_deletion_for_test_blog()
+
+
+
