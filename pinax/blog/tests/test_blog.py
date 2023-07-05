@@ -205,7 +205,13 @@ class TestViews(TestBlog):
             self.assertEqual(response.context_data["post_list"].count(), 1)
             self.assertIn(self.orange2_post, response.context_data["post_list"])
 
-    def test_manage_update_post_get_author(self):
+
+    def test_manage_update_post_not_authenticated(self):
+        url = reverse("pinax_blog:manage_post_update", kwargs={"post_pk": "1"})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_manage_update_post_author(self):
 
         with self.login(self.user):
             url = reverse("pinax_blog:manage_post_update", kwargs={"post_pk": "1"})
@@ -213,10 +219,22 @@ class TestViews(TestBlog):
             self.assertEqual(response.status_code, 200)
             self.assertTemplateUsed("pinax/blog/manage_post_update")
 
-    def test_manage_update_post_get_not_author(self):
-        url = reverse("pinax_blog:manage_post_update", kwargs={"post_pk": "1"})
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
+            post_title = "Oranges are not red"
+            post_data = dict(
+                section=self.oranges.pk,
+                title=post_title,
+                teaser="teaser",
+                content="content",
+                description="description",
+                state=Post.STATE_CHOICES[-1][0],
+            )
+            self.post(url, data=post_data)
+            self.assertRedirects(
+                self.last_response, reverse("pinax_blog:manage_post_list")
+            )
+            self.assertTrue(Post.objects.get(title=post_title))
+
+    def test_manage_update_post_not_author(self):
 
         self.user = self.make_user("jani")
         self.user.save()
