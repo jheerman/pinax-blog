@@ -167,8 +167,9 @@ class TestViews(TestBlog, SuccessfulDeletion, SuccessfulPostListing):
         Ensure template with external URL references renders properly
         for user with proper credentials.
         """
-        response = self.client.get("pinax_blog:manage_post_create")
-        self.assertEqual(response.status_code, 404)
+        response = self.get("pinax_blog:manage_post_create")
+        # using self.client.get results in a fail
+        self.assertEqual(response.status_code, 302)
 
         with self.login(self.user):
             self.get("pinax_blog:manage_post_create")
@@ -201,7 +202,7 @@ class TestViews(TestBlog, SuccessfulDeletion, SuccessfulPostListing):
     def test_user_manage_post_list_not_authenticated(self):
         url = reverse("pinax_blog:manage_post_list")
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 302)
 
     def test_user_manage_post_list_own_posts(self):
 

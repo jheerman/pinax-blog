@@ -1,6 +1,7 @@
 import json
 from datetime import datetime
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.sites.models import Site
 from django.db.models import Q
 from django.http import Http404, HttpResponse, JsonResponse
@@ -238,16 +239,14 @@ class ManageSuccessUrlMixin:
         return reverse("pinax_blog:manage_post_list")
 
 
-class UserManageBlogMixin:
+class UserManageBlogMixin(LoginRequiredMixin):
 
     def dispatch(self, request, *args, **kwargs):
         self.request = request
         self.args = args
         self.kwargs = kwargs
-        if hookset.user_authenticated(request, *args):
-            self.blog = hookset.get_blog(**kwargs)
-            return super().dispatch(request, *args, **kwargs)
-        return hookset.response_cannot_manage(request, *args, **kwargs)
+        self.blog = hookset.get_blog(**kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
 
 class UserManageDispatch(UserManageBlogMixin):
